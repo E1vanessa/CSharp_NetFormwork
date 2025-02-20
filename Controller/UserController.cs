@@ -15,9 +15,9 @@ namespace SocketGameServer.Controller
             requestCode = RequestCode.User;
         }
 
-        public MainPack Logon(Server server,Client client,MainPack pack)
+        public MainPack Logon(Client client,MainPack pack)
         {
-            if(server.Logon(client, pack))
+            if(client.Logon(pack))
             {
                 pack.Returncode = ReturnCode.Succeed;
             }
@@ -28,9 +28,9 @@ namespace SocketGameServer.Controller
             return pack;
         }
 
-        public MainPack Login(Server server, Client client, MainPack pack)
+        /*public MainPack Login(Server server, Client client, MainPack pack)
         {
 
-        }
+        }*/
     }
 }

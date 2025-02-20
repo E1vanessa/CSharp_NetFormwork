@@ -33,7 +33,7 @@ namespace SocketGameServer.Controller
                     Console.WriteLine("没有找到指定的事件处理"+pack.Actioncode.ToString());
                     return;
                 }
-                object[] obj = new object[] {server,client,pack };
+                object[] obj = new object[] {client,pack };
                 object ret = method.Invoke(controller,obj);
                 if(ret != null)
                 {

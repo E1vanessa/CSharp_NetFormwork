@@ -22,6 +22,8 @@ namespace SocketGameServer.Servers
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             socket.Bind(new IPEndPoint(IPAddress.Any, port));
             socket.Listen(0);
+            StartAccept();
+            Console.WriteLine("服务端已开启");
         }
 
         void StartAccept()
@@ -32,13 +34,13 @@ namespace SocketGameServer.Servers
         void AcceptCallback(IAsyncResult iar) 
         {
             Socket client = socket.EndAccept(iar);
-            clientList.Add(new Client(client));
+            clientList.Add(new Client(client,this));
             StartAccept();
         }
 
-        public bool Logon(Client client,MainPack pack)
+        public void HandleRequest(MainPack pack,Client client)
         {
-            return client.GetUserData.Logon(pack);
+            controllerManager.HandleRequest(pack, client);
         }
     }
 }

@@ -27,7 +27,7 @@ namespace SocketGameServer.Tool
             get { return buffer.Length - startindex; }
         }
 
-        public void ReadBuffer(int len)
+        public void ReadBuffer(int len,Action<MainPack> HandleRequest)
         {
             startindex += len;
             if (startindex <= 4) return;
@@ -37,6 +37,7 @@ namespace SocketGameServer.Tool
                 if (startindex >= (count + 4))
                 {
                     MainPack pack  = (MainPack)MainPack.Descriptor.Parser.ParseFrom(buffer,4,count);
+                    HandleRequest(pack);
                     Array.Copy(buffer, count + 4, buffer, 0, startIndex - count - 4);
                     startindex -= (count + 4);
                 }

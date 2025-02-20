@@ -1,65 +1,53 @@
 ﻿using MySql.Data.MySqlClient;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SocketGameProtocol;
 
 namespace SocketGameServer.DAO
 {
     class UserData
     {
-        private MySqlConnection mysqlCon;
-
-        private string connstr = "database=sys;data source=127.0.0.1;password=root;pooling=false;charset=utf8;port=3306";
-
-        public UserData()
-        {
-            ConnectMysql();
-        }
-
-        private void ConnectMysql()
-        {
-            try
-            {
-                mysqlCon = new MySqlConnection(connstr);
-                mysqlCon.Open();
-            }
-            catch(Exception e)
-            {
-                Console.WriteLine("连接数据库失败!");
-            }
-        }
-
-        public bool Logon(MainPack pack)
+        public bool Logon(MainPack pack,MySqlConnection sqlConnection)
         {
             string username = pack.Loginpack.Username;
             string password = pack.Loginpack.Password;
 
-            string sql = "SELECT * shipgame_userinfo.userdata where username='@username'";
-            MySqlCommand comd = new MySqlCommand(sql,mysqlCon);
-            MySqlDataReader read = comd.ExecuteReader();
-            if (read.Read())
+            string selectSql = "SELECT * FROM shipgame_userinfo.userdata WHERE username = @username";
+            using (MySqlCommand selectCommand = new MySqlCommand(selectSql, sqlConnection))
             {
-                //用户名被注册;
-                return false;
+                selectCommand.Parameters.AddWithValue("@username", username);
+                using (MySqlDataReader reader = selectCommand.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        // 用户名已被注册
+                        return false;
+                    }
+                }
             }
-            //插入数据
-            sql = "INSERT INTO shipgame_userinfo.userdata (username,password) VAIUES ( '@username','@password')";
-            comd = new MySqlCommand(sql,mysqlCon);
+
+            // 插入数据
+            string insertSql = "INSERT INTO shipgame_userinfo.userdata (username, password) VALUES (@username, @password)";
             try
             {
-                comd.ExecuteNonQuery();
-                return true;
+                using (MySqlCommand insertCommand = new MySqlCommand(insertSql, sqlConnection))
+                {
+                    insertCommand.Parameters.AddWithValue("@username", username);
+                    insertCommand.Parameters.AddWithValue("@password", password);
+                    insertCommand.ExecuteNonQuery();
+                    return true;
+                }
             }
-            catch (Exception e)
+            catch (MySqlException ex)
             {
-                Console.WriteLine(e.Message);
-
+                // 处理 MySQL 相关异常
+                Console.WriteLine($"MySQL 异常: {ex.Message}");
                 return false;
             }
-            
+            catch (Exception ex)
+            {
+                // 处理其他异常
+                Console.WriteLine($"其他异常: {ex.Message}");
+                return false;
+            }
         }
     }
 }
